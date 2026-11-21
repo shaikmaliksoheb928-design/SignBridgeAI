@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SignBridge AI — Sign Language Recognition</title>
+  <meta name="description" content="A browser-based sign language learning and recognition prototype for ISL and ASL." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">S</span><span>SignBridge<span class="brand-ai"> AI</span></span></a>
+    <div class="top-status"><span class="pulse"></span><span id="systemStatus">System ready</span></div>
+    <a class="github-link" href="#howItWorks">How it works <span>↗</span></a>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="eyebrow-line"></span> HUMAN CONNECTION, POWERED BY AI</div>
+      <h1>Make every gesture<br><span class="gradient-text">understood.</span></h1>
+      <p class="hero-copy">A real-time hand-sign learning studio for Indian and American Sign Language. Your camera, your data, your bridge.</p>
+      <div class="hero-tags"><span>✦ Live hand tracking</span><span>✦ ISL + ASL modes</span><span>✦ On-device learning</span></div>
+    </section>
+
+    <section class="workspace">
+      <div class="section-heading">
+        <div><div class="section-kicker">01 / RECOGNITION STUDIO</div><h2>Live sign interpreter</h2></div>
+        <div class="privacy-pill"><span>●</span> Camera stays on your device</div>
+      </div>
+      <div class="studio-grid">
+        <div class="camera-card glass">
+          <div class="card-topline"><span><i class="live-dot"></i> CAMERA FEED</span><span id="cameraState" class="mini-state">OFFLINE</span></div>
+          <div class="video-wrap" id="videoWrap">
+            <video id="webcam" autoplay playsinline muted></video>
+            <canvas id="overlay"></canvas>
+            <div class="camera-placeholder" id="cameraPlaceholder">
+              <div class="camera-icon">◎</div><strong>Your camera view will appear here</strong>
+              <span>Allow camera access to begin hand tracking</span>
+            </div>
+            <div class="tracking-chip" id="trackingChip"><span class="pulse"></span> TRACKING</div>
+          </div>
+          <div class="camera-controls">
+            <button class="btn btn-primary" id="startCamera">Start camera <span>→</span></button>
+            <button class="btn btn-secondary" id="stopCamera" disabled>Stop</button>
+            <label class="switch-label"><input type="checkbox" id="mirrorToggle" checked><span class="switch"></span> Mirror</label>
+          </div>
+          <p class="small-note" id="cameraMessage">Use a well-lit space and keep one hand fully visible.</p>
+        </div>
+
+        <div class="result-column">
+          <div class="result-card glass">
+            <div class="card-topline"><span>LIVE INTERPRETATION</span><span class="spark">✧ AI</span></div>
+            <div class="language-row">
+              <label for="languageSelect">SIGN LANGUAGE</label>
+              <select id="languageSelect"><option value="ISL">Indian Sign Language · ISL</option><option value="ASL">American Sign Language · ASL</option></select>
+            </div>
+            <div class="prediction-box">
+              <div class="prediction-label">PREDICTED SIGN</div>
+              <div class="prediction" id="prediction">—</div>
+              <div class="confidence-row"><span>Match confidence</span><strong id="confidence">0%</strong></div>
+              <div class="confidence-track"><div id="confidenceBar"></div></div>
+              <p id="predictionHint" class="prediction-hint">Record examples in the Training Lab to teach the model your signs.</p>
+            </div>
+            <div class="result-actions">
+              <button class="btn btn-primary btn-full" id="addWord" disabled>＋ Add sign to sentence</button>
+              <button class="btn btn-ghost" id="speakPrediction" disabled>◖ Speak sign</button>
+            </div>
+          </div>
+          <div class="sentence-card glass">
+            <div class="sentence-head"><div><div class="section-kicker">YOUR MESSAGE</div><h3>Sentence builder</h3></div><span class="word-count" id="wordCount">0 signs</span></div>
+            <div class="sentence-output" id="sentenceOutput">Your recognized signs will appear here…</div>
+            <div class="sentence-actions"><button class="text-button" id="speakSentence">▶ Speak sentence</button><button class="text-button danger" id="clearSentence">Clear all</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="training-section" id="training">
+      <div class="section-heading">
+        <div><div class="section-kicker">02 / PERSONAL SIGN MODEL</div><h2>Teach SignBridge your signs</h2></div>
+        <div class="dataset-count"><span id="sampleCount">0</span> training samples saved</div>
+      </div>
+      <div class="training-grid">
+        <div class="train-card glass">
+          <div class="train-icon">⌁</div><h3>Build your sign library</h3>
+          <p>Choose the language, type a sign label, then record examples while holding that sign in front of the camera.</p>
+          <div class="field-label">SIGN LABEL <span>e.g. HELLO, THANK YOU, A</span></div>
+          <div class="label-input-row"><input id="signLabel" type="text" maxlength="24" placeholder="Enter a sign name"><button class="btn btn-primary" id="recordSamples" disabled>Record 15 samples</button></div>
+          <div class="record-progress" id="recordProgress"><div id="recordProgressBar"></div></div>
+          <div class="record-status" id="recordStatus">Start the camera, then record a sign label.</div>
+          <div class="tip-box"><strong>Recording tip</strong><span>Keep your hand steady, centered and well-lit. Record each sign from slightly different angles. Aim for at least 15–30 examples per sign.</span></div>
+        </div>
+        <div class="library-card glass">
+          <div class="library-head"><div><h3>My sign library</h3><span class="muted">Saved locally in this browser</span></div><button class="text-button danger" id="deleteLanguageData">Delete language data</button></div>
+          <div id="libraryList" class="library-list"><div class="empty-library">No signs trained yet. Add your first sign to get started.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-section" id="howItWorks">
+      <div class="section-kicker">03 / GETTING STARTED</div><h2>From gesture to understanding.</h2>
+      <div class="steps-grid">
+        <div class="step"><span>01</span><h3>Choose a language</h3><p>Switch between ISL and ASL. Each language has its own independent sign library.</p></div>
+        <div class="step"><span>02</span><h3>Teach a sign</h3><p>Record examples for a label. The app learns a landmark pattern from your samples.</p></div>
+        <div class="step"><span>03</span><h3>Sign and speak</h3><p>Show a trained sign to the camera, add predictions to a sentence, and play it aloud.</p></div>
+      </div>
+      <div class="important-note"><strong>Prototype limitation:</strong> This version recognizes static, one-hand poses that you teach it. It does not yet understand full sign-language grammar, two-hand signs, facial expressions, motion-based signs, or every ISL/ASL sign. A real-world translator needs a validated, consented dataset and extensive testing with sign-language users.</div>
+    </section>
+    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">S</span><span>SignBridge<span class="brand-ai"> AI</span></span></a><span>Built to bring people closer. <span class="footer-dot">●</span> Prototype v1.0</span></footer>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
